@@ -1,6 +1,6 @@
 ---
 
-- name:  Zabbix Agent2 deploy for DOcker MOnitoring
+- name:  Instalación y configuración de Zabbix Agent2 para monitoreo de Docker
   hosts: redhat
 
 
@@ -31,21 +31,42 @@
      ansible.builtin.copy:
       src: zabbix_agent2.conf
       dest: /etc/zabbix
+     tags: 
+     - hecho
 
    - name: Habilitar systemD en zabbix-agent2 para cada inicio
      ansible.builtin.command:
       cmd: systemctl enable zabbix-agent2
+     tags: 
+     - hecho
 
    - name: Reiniciar el servicio zabbix-agent2 para efectuar cambios en archivo de configuracion
      ansible.builtin.command:
       cmd: systemctl restart zabbix-agent2
-   
-   - name: Visualizar resultado de reinicio de agente
+     tags: 
+     - hecho
+
+   - name: Ejecutar reinicio de agente zabbix
      ansible.builtin.command:
       cmd: systemctl status zabbix-agent2
      register: status
     
-   - name: Print status
+   - name: Visualizar el resultado del reinicio de agente zabbix
      ansible.builtin.debug:
-      msg: "{{status}}"
-      
+      msg: "{{status.stdout_lines}}"
+  
+   - name: Agregar usuario Zabbix a grupo Docker 
+     ansible.builtin.command:
+      cmd: usermod -a -G docker zabbix
+
+   - name: Obtener informacion sobre grupos
+     ansible.builtin.command:
+      cmd: cat /etc/group
+     register: zabbix
+   
+   - name: Visualizar si el usuario zabbix pertenece al grupo docker
+     ansible.builtin.debug:
+      msg: "{{zabbix.stdout_lines[58]}}"
+
+
+- name: Configuración de host en frontend de Zabbix
