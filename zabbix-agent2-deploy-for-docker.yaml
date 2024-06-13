@@ -76,31 +76,23 @@
       msg: "{{zabbix.stdout_lines[58]}}"
     tags:
     - hecho
-
-  - name: Setear variables de conexion
-    ansible.builtin.set_fact:
-      delegate_to: 'http://zabbix-server:8080'
-      ansible_network_os: community.zabbix.zabbix
-      ansible_connection: httpapi
-      ansible_httpapi_use_ssl: false
-      ansible_httpapi_validate_certs: false
-      ansible_zabbix_url_path: ""
-      ansible_httapi_port: 8080
-      ansible_user: Admin 
-      ansible_httpapi_pass: zabbix
-      
+     
   
   - name: Verificar conexion
     ansible.builtin.debug:
       msg: "Conexion establecida"
 
-
-    delegate_to: 'localhost'
   - name: Crear host en zabbix
-    community.zabbix.zabbix_hostmacro:
-      macro_name: nico
-      macro_value: "nito"
-      state: present
+    vars:
+      ansible_connection: httpapi
+      ansible_network_os: community.zabbix.zabbix
+      ansible_httpapi_port: 8080
+      ansible_zabbix_url_path: ''
+      ansible_user: Admin
+      ansible_httpapi_pass: zabbix
+    become: false
+    delegate_to: zabbix-server
+    community.zabbix.zabbix_host:
       host_name: Red Hat Platform Automatization
       visible_name: Red Hat Platform Automatization
       description: Server creado desde Ansible - Contiene Ansible y Docker
@@ -111,8 +103,10 @@
       status: enabled
       interfaces:
         - type: 1
+          main: 1
           useip: 1
           ip: 192.168.100.69
           port: "10050"
+          dns: ""
 
     
